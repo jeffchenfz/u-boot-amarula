@@ -117,7 +117,7 @@ struct sun4i_usb_phy_info {
 		.gpio_vbus = CONFIG_USB3_VBUS_PIN,
 		.gpio_vbus_det = NULL,
 		.gpio_id_det = NULL,
-#ifdef CONFIG_MACH_SUN6I
+#ifdef CONFIG_MACH_SUNXI_H3_H5
 		.rst_mask = (CCM_USB_CTRL_PHY3_RST | CCM_USB_CTRL_PHY3_CLK),
 #endif
 	},
