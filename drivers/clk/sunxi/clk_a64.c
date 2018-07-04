@@ -41,10 +41,19 @@ static int a64_clk_enable(struct clk *clk)
 	return -EINVAL;
 }
 
+static int a64_clk_disable(struct clk *clk)
+{
+	debug("%s(#%ld)\n", __func__, clk->id);
+
+	debug("  unhandled\n");
+	return -EINVAL;
+}
+
 static struct clk_ops a64_clk_ops = {
 	.get_rate = a64_clk_get_rate,
 	.set_rate = a64_clk_set_rate,
 	.enable = a64_clk_enable,
+	.disable = a64_clk_disable,
 };
 
 static int a64_clk_probe(struct udevice *dev)
