@@ -4,4 +4,4 @@
 # SPDX-License-Identifier:      GPL-2.0+
 #
 
-obj-$(CONFIG_MACH_SUN50I) += clk_a64.o
+obj-$(CONFIG_CLK_SUN50I_A64) += clk_a64.o
