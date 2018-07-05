@@ -98,4 +98,6 @@ config RESET_SOCFPGA
 	help
 	  Support for reset controller on SoCFPGA platform.
 
+source "drivers/reset/sunxi/Kconfig"
+
 endmenu

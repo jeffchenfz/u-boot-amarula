@@ -1,0 +1,19 @@
+config RESET_SUNXI
+	bool "RESET support for Allwinner SoCs"
+	depends on ARCH_SUNXI
+	depends on CLK_SUNXI
+	select DM_RESET
+	help
+	  This enables support for common reset driver API on Allwinner
+	  SoCs.
+
+if RESET_SUNXI
+
+config RESET_SUN50I_A64
+	bool "Reset driver for Allwinner A64"
+	default MACH_SUN50I
+	help
+	  This enables common reset driver support for platforms based
+	  on Allwinner A64 SoC.
+
+endif # RESET_SUNXI
