@@ -67,7 +67,7 @@ static const struct udevice_id a64_clk_ids[] = {
 };
 
 U_BOOT_DRIVER(clk_sun50i_a64) = {
-	.name		= "sun50i-a64-ccu",
+	.name		= "sun50i_a64_ccu",
 	.id		= UCLASS_CLK,
 	.of_match	= a64_clk_ids,
 	.priv_auto_alloc_size	= sizeof(struct a64_clk_priv),
