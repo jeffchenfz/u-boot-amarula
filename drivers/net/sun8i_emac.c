@@ -10,16 +10,16 @@
  *
 */
 
-#include <asm/io.h>
-#include <asm/arch/clock.h>
-#include <asm/arch/gpio.h>
 #include <common.h>
 #include <dm.h>
 #include <fdt_support.h>
-#include <linux/err.h>
 #include <malloc.h>
 #include <miiphy.h>
 #include <net.h>
+#include <asm/io.h>
+#include <asm/arch/clock.h>
+#include <asm/arch/gpio.h>
+#include <linux/err.h>
 #include <dt-bindings/pinctrl/sun4i-a10.h>
 #ifdef CONFIG_DM_GPIO
 #include <asm-generic/gpio.h>
