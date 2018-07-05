@@ -137,4 +137,5 @@ U_BOOT_DRIVER(clk_sun50i_a64) = {
 	.ofdata_to_platdata	= a64_clk_ofdata_to_platdata,
 	.ops		= &a64_clk_ops,
 	.probe		= a64_clk_probe,
+	.bind		= sunxi_clk_bind,
 };

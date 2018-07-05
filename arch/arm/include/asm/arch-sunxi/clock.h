@@ -34,4 +34,12 @@ void clock_init_sec(void);
 void clock_init_uart(void);
 #endif
 
+/*
+ * sunxi_clk_bind() - Bind reset device as child of clock device
+ *
+ * @cdev:	clock udevice
+ * @return 0 success, or error value
+ */
+int sunxi_clk_bind(struct udevice *cdev);
+
 #endif /* _SUNXI_CLOCK_H */
