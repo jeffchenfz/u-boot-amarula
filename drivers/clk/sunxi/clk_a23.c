@@ -97,6 +97,7 @@ static int a23_clk_ofdata_to_platdata(struct udevice *dev)
 
 static const struct udevice_id a23_clk_ids[] = {
 	{ .compatible = "allwinner,sun8i-a23-ccu" },
+	{ .compatible = "allwinner,sun8i-a33-ccu" },
 	{ }
 };
 
