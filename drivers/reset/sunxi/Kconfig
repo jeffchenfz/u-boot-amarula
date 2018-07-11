@@ -9,6 +9,13 @@ config RESET_SUNXI
 
 if RESET_SUNXI
 
+config RESET_SUN8I_H3
+	bool "Reset driver for Allwinner H3/H5"
+	default MACH_SUNXI_H3_H5
+	help
+	  This enables common reset driver support for platforms based
+	  on Allwinner H3/H5 SoC.
+
 config RESET_SUN50I_A64
 	bool "Reset driver for Allwinner A64"
 	default MACH_SUN50I
