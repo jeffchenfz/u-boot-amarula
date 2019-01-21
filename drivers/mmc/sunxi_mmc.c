@@ -8,10 +8,12 @@
  */
 
 #include <common.h>
+#include <clk.h>
 #include <dm.h>
 #include <errno.h>
 #include <malloc.h>
 #include <mmc.h>
+#include <reset.h>
 #include <asm/io.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/cpu.h>
@@ -21,7 +23,6 @@
 
 #ifdef CONFIG_DM_MMC
 struct sunxi_mmc_variant {
-	u16 gate_offset;
 	u16 mclk_offset;
 };
 #endif
@@ -41,6 +42,8 @@ struct sunxi_mmc_priv {
 	struct mmc_config cfg;
 #ifdef CONFIG_DM_MMC
 	const struct sunxi_mmc_variant *variant;
+	struct clk clk_ahb;
+	struct reset_ctl reset;
 #endif
 };
 
@@ -602,6 +605,32 @@ static const struct dm_mmc_ops sunxi_mmc_ops = {
 	.get_cd		= sunxi_mmc_getcd,
 };
 
+static int sunxi_mmc_enable(struct udevice *dev)
+{
+	struct sunxi_mmc_priv *priv = dev_get_priv(dev);
+	int ret;
+
+	ret = clk_enable(&priv->clk_ahb);
+	if (ret) {
+		dev_err(dev, "failed to enable AHB clock\n");
+		return ret;
+	}
+
+	if (reset_valid(&priv->reset)) {
+		ret = reset_deassert(&priv->reset);
+		if (ret) {
+			dev_err(dev, "failed to deassert reset\n");
+			goto err_clk_ahb;
+		}
+	}
+
+	return 0;
+
+err_clk_ahb:
+	clk_disable(&priv->clk_ahb);
+	return ret;
+}
+
 static int sunxi_mmc_probe(struct udevice *dev)
 {
 	struct mmc_uclass_priv *upriv = dev_get_uclass_priv(dev);
@@ -609,7 +638,7 @@ static int sunxi_mmc_probe(struct udevice *dev)
 	struct sunxi_mmc_priv *priv = dev_get_priv(dev);
 	struct mmc_config *cfg = &plat->cfg;
 	struct ofnode_phandle_args args;
-	u32 *gate_reg, *ccu_reg;
+	u32 *ccu_reg;
 	int bus_width, ret;
 
 	cfg->name = dev->name;
@@ -641,8 +670,22 @@ static int sunxi_mmc_probe(struct udevice *dev)
 	priv->mmc_no = ((uintptr_t)priv->reg - SUNXI_MMC0_BASE) / 0x1000;
 	priv->mclkreg = (void *)ccu_reg +
 			(priv->variant->mclk_offset + (priv->mmc_no * 4));
-	gate_reg = (void *)ccu_reg + priv->variant->gate_offset;
-	setbits_le32(gate_reg, BIT(AHB_GATE_OFFSET_MMC(priv->mmc_no)));
+
+	ret = clk_get_by_name(dev, "ahb", &priv->clk_ahb);
+	if (ret) {
+		dev_err(dev, "failed to get AHB clock\n");
+		return ret;
+	}
+
+	ret = reset_get_by_name(dev, "ahb", &priv->reset);
+	if (ret && ret != -ENOENT) {
+		dev_err(dev, "failed to get reset\n");
+		return ret;
+	}
+
+	ret = sunxi_mmc_enable(dev);
+	if (ret)
+		return ret;
 
 	ret = mmc_set_mod_clk(priv, 24000000);
 	if (ret)
@@ -676,7 +719,6 @@ static int sunxi_mmc_bind(struct udevice *dev)
 }
 
 static const struct sunxi_mmc_variant sun4i_a10_variant = {
-	.gate_offset = 0x60,
 	.mclk_offset = 0x88,
 };
 
