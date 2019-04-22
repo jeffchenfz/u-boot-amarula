@@ -276,6 +276,14 @@ config ROCKCHIP_SPL_RESERVE_IRAM
 config ROCKCHIP_BROM_HELPER
 	bool
 
+config SPL_ROCKCHIP_IMG_NAME
+	string "SPL Rockchip image name"
+	default "rk3399" if ROCKCHIP_RK3399
+	help
+	  To create SPL image for rockchip targets the image name would
+	  depends on the SoC family that would pass as an argument as
+	  '-n rk3399' to mkimage for creating Rockchip SPL boot image.
+
 config SPL_ROCKCHIP_EARLYRETURN_TO_BROM
         bool "SPL requires early-return (for RK3188-style BROM) to BROM"
 	depends on SPL && ENABLE_ARM_SOC_BOOT0_HOOK

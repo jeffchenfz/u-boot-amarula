@@ -235,6 +235,10 @@ ALL-$(CONFIG_ARCH_ZYNQMP)	+= $(obj)/boot.bin
 
 ALL-$(CONFIG_ARCH_MEDIATEK)	+= $(obj)/u-boot-spl-mtk.bin
 
+ifdef CONFIG_ROCKCHIP_RK3399
+ALL-$(CONFIG_ARCH_ROCKCHIP)	+= $(obj)/u-boot-spl-rockchip.bin
+endif
+
 all:	$(ALL-y)
 
 quiet_cmd_cat = CAT     $@
@@ -368,6 +372,23 @@ MKIMAGEFLAGS_u-boot-spl-mtk.bin = -T mtk_image \
 
 $(obj)/u-boot-spl-mtk.bin: $(obj)/u-boot-spl.bin FORCE
 	$(call if_changed,mkimage)
+
+# Rockchip specific SPL build
+ifeq ($(CONFIG_ROCKCHIP_RK3399),y)
+
+ifeq ($(CONFIG_SPI_FLASH_SUPPORT),y)
+ROCKCHIP_IMG_TYPE := rkspi
+else
+ROCKCHIP_IMG_TYPE := rksd
+endif
+
+MKIMAGEFLAGS_u-boot-spl-rockchip.bin = -n $(CONFIG_SPL_ROCKCHIP_IMG_NAME) \
+	-T $(ROCKCHIP_IMG_TYPE) -d $(MKIMAGEOUTPUT)
+
+$(obj)/u-boot-spl-rockchip.bin: $(obj)/u-boot-spl.bin FORCE
+	$(call if_changed,mkimage)
+
+endif # CONFIG_ROCKCHIP_RK3399
 
 # Rule to link u-boot-spl
 # May be overridden by arch/$(ARCH)/config.mk

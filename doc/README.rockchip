@@ -421,11 +421,10 @@ Option 2: Package the image with SPL:
   - Prefix rk3399 header to SPL image
 
     => cd /path/to/u-boot
-    => ./tools/mkimage -n rk3399 -T rksd -d spl/u-boot-spl-dtb.bin out
 
   - Write prefixed SPL at 64th sector
 
-    => sudo dd if=out of=/dev/sdc seek=64
+    => sudo dd if=spl/u-boot-spl-rockchip.bin of=/dev/sdc seek=64
 
   - Write U-Boot proper at 16384 sector
 
