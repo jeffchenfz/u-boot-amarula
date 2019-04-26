@@ -422,13 +422,9 @@ Option 2: Package the image with SPL:
 
     => cd /path/to/u-boot
 
-  - Write prefixed SPL at 64th sector
+  - Write single spl + u-boot at 64th sector
 
-    => sudo dd if=spl/u-boot-spl-rockchip.bin of=/dev/sdc seek=64
-
-  - Write U-Boot proper at 16384 sector
-
-    => sudo dd if=u-boot.itb of=/dev/sdc seek=16384
+    => sudo dd if=u-boot-rockchip-with-spl.bin of=/dev/sdc seek=64
     => sync
 
 Put this SD (or micro-SD) card into your board and reset it. You should see

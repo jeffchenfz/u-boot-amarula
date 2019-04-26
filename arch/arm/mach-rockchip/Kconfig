@@ -153,6 +153,7 @@ endif
 config ROCKCHIP_RK3399
 	bool "Support Rockchip RK3399"
 	select ARM64
+	select BINMAN
 	select SUPPORT_SPL
 	select SUPPORT_TPL
 	select SPL

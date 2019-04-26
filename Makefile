@@ -851,6 +851,11 @@ ifeq ($(CONFIG_ARCH_SUNXI)$(CONFIG_SPL),yy)
 ALL-y += u-boot-sunxi-with-spl.bin
 endif
 
+# Build a combined spl + u-boot image for rockchip
+ifdef CONFIG_ROCKCHIP_RK3399
+ALL-$(CONFIG_ARCH_ROCKCHIP) += u-boot-rockchip-with-spl.bin
+endif
+
 # enable combined SPL/u-boot/dtb rules for tegra
 ifeq ($(CONFIG_TEGRA)$(CONFIG_SPL),yy)
 ALL-y += u-boot-tegra.bin u-boot-nodtb-tegra.bin
@@ -1398,6 +1403,11 @@ u-boot-sunxi-with-spl.bin: spl/sunxi-spl.bin u-boot.itb FORCE
 endif
 endif
 
+ifeq ($(CONFIG_ROCKCHIP_RK3399),y)
+u-boot-rockchip-with-spl.bin: spl/u-boot-spl-rockchip.bin u-boot.itb FORCE
+	@$(call if_changed,binman)
+endif # CONFIG_ROCKCHIP_RK3399
+
 ifneq ($(CONFIG_TEGRA),)
 ifneq ($(CONFIG_BINMAN),)
 # Makes u-boot-dtb-tegra.bin u-boot-tegra.bin u-boot-nodtb-tegra.bin
@@ -1694,6 +1704,9 @@ spl/u-boot-spl: tools prepare \
 	$(Q)$(MAKE) obj=spl -f $(srctree)/scripts/Makefile.spl all
 
 spl/sunxi-spl.bin: spl/u-boot-spl
+	@:
+
+spl/u-boot-spl-rockchip.bin: spl/u-boot-spl
 	@:
 
 spl/sunxi-spl-with-ecc.bin: spl/sunxi-spl.bin
