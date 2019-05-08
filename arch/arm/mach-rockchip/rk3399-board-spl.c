@@ -195,11 +195,13 @@ void board_init_f(ulong dummy)
 		return;
 	}
 
+#if !defined(SUPPORT_TPL)
 	ret = uclass_get_device(UCLASS_RAM, 0, &dev);
 	if (ret) {
 		pr_err("DRAM init failed: %d\n", ret);
 		return;
 	}
+#endif
 }
 
 #ifdef CONFIG_SPL_LOAD_FIT
