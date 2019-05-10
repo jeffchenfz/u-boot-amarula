@@ -42,10 +42,15 @@ int dram_init_banksize(void)
 {
 	size_t max_size = min((unsigned long)gd->ram_size, gd->ram_top);
 
+	printf("max_size: 0x%lx\n", max_size);
+	gd->bd->bi_dram[0].start = 0x0;
+	gd->bd->bi_dram[0].size = 0x0;
+	printf("Bf: start %llx, size %llx\n", gd->bd->bi_dram[0].start, gd->bd->bi_dram[0].size);
 	/* Reserve 0x200000 for ATF bl31 */
 	gd->bd->bi_dram[0].start = 0x200000;
 	gd->bd->bi_dram[0].size = max_size - gd->bd->bi_dram[0].start;
 
+	printf("start %llx, size %llx\n", gd->bd->bi_dram[0].start, gd->bd->bi_dram[0].size);
 	return 0;
 }
 
