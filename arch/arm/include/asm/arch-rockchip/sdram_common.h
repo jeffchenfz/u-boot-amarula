@@ -49,6 +49,15 @@
 #define SYS_REG_DBW_SHIFT(ch)		((ch) * 16)
 #define SYS_REG_DBW_MASK		3
 
+#define SYS_REG1_VERSION_SHIFT			28
+#define SYS_REG1_VERSION_MASK			0xf
+#define SYS_REG1_EXTEND_CS0_ROW_SHIFT(ch)	(5 + (ch) * 2)
+#define SYS_REG1_EXTEND_CS0_ROW_MASK		1
+#define SYS_REG1_EXTEND_CS1_ROW_SHIFT(ch)	(4 + (ch) * 2)
+#define SYS_REG1_EXTEND_CS1_ROW_MASK		1
+#define SYS_REG1_CS1_COL_SHIFT(ch)		(0 + (ch) * 2)
+#define SYS_REG1_CS1_COL_MASK			3
+
 /* Get sdram size decode from reg */
 size_t rockchip_sdram_size(phys_addr_t reg);
 

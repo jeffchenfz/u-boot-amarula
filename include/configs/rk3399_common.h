@@ -47,6 +47,8 @@
 
 #ifndef CONFIG_SPL_BUILD
 
+/* #define DEBUG */
+
 #define ENV_MEM_LAYOUT_SETTINGS \
 	"scriptaddr=0x00500000\0" \
 	"pxefile_addr_r=0x00600000\0" \
