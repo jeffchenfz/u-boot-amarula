@@ -833,39 +833,55 @@ struct io_setting lp4_io_set[] = {
 		41,	/* rd_vref; (unit %, range 3.3% - 48.7%) */
 	},
 	{
-		400 * MHz,
+		600*MHz,
 		0,
 		/* dram side */
-		0,	/* dq_odt; */
+		1,	/* dq_odt; */
 		0,	/* ca_odt; */
 		6,	/* pdds; */
 		0x72,	/* dq_vref; */
 		0x72,	/* ca_vref; */
 		/* phy side */
 		PHY_DRV_ODT_HI_Z,	/* rd_odt; */
-		PHY_DRV_ODT_40,	/* wr_dq_drv; */
+		PHY_DRV_ODT_48,	/* wr_dq_drv; */
 		PHY_DRV_ODT_40,	/* wr_ca_drv; */
 		PHY_DRV_ODT_40,	/* wr_ckcs_drv; */
 		0,	/* rd_odt_en; */
-		/* shmoo result, read signal 41% is the best */
-		41,	/* rd_vref; (unit %, range 3.3% - 48.7%) */
+		32,	/* rd_vref; (unit %, range 3.3% - 48.7%) */
 	},
 	{
 		800 * MHz,
 		0,
 		/* dram side */
-		0,	/* dq_odt; */
+		1,	/* dq_odt; */
 		0,	/* ca_odt; */
 		1,	/* pdds; */
 		0x72,	/* dq_vref; */
 		0x72,	/* ca_vref; */
 		/* phy side */
 		PHY_DRV_ODT_40,	/* rd_odt; */
-		PHY_DRV_ODT_40,	/* wr_dq_drv; */
+		PHY_DRV_ODT_48,	/* wr_dq_drv; */
 		PHY_DRV_ODT_40,	/* wr_ca_drv; */
 		PHY_DRV_ODT_40,	/* wr_ckcs_drv; */
 		1,	/* rd_odt_en; */
 		17,	/* rd_vref; (unit %, range 3.3% - 48.7%) */
+	},
+	{
+		933*MHz,
+		0,
+		/* dram side */
+		3,	/* dq_odt; */
+		0,	/* ca_odt; */
+		6,	/* pdds; */
+		0x59,	/* dq_vref; 32% */
+		0x72,	/* ca_vref; */
+		/* phy side */
+		PHY_DRV_ODT_HI_Z,	/* rd_odt; */
+		PHY_DRV_ODT_48,	/* wr_dq_drv; */
+		PHY_DRV_ODT_40,	/* wr_ca_drv; */
+		PHY_DRV_ODT_40,	/* wr_ckcs_drv; */
+		0,	/* rd_odt_en; */
+		32,	/* rd_vref; (unit %, range 3.3% - 48.7%) */
 	},
 	{
 		1066 * MHz,
@@ -1815,6 +1831,9 @@ static int data_training_ca(const struct chan_info *chan, u32 channel,
 	u32 rank = sdram_params->ch[channel].cap_info.rank;
 	u32 rank_mask;
 
+	/* clear interrupt,PI_175 PI_INT_ACK:WR:0:17 */
+	writel(0x00003f7c, (&denali_pi[175]));
+
 	if (sdram_params->base.dramtype == LPDDR4)
 		rank_mask = (rank == 1) ? 0x5 : 0xf;
 	else
@@ -1872,6 +1891,9 @@ static int data_training_wl(const struct chan_info *chan, u32 channel,
 	u32 obs_0, obs_1, obs_2, obs_3, obs_err = 0;
 	u32 rank = sdram_params->ch[channel].cap_info.rank;
 
+	/* clear interrupt,PI_175 PI_INT_ACK:WR:0:17 */
+	writel(0x00003f7c, (&denali_pi[175]));
+
 	for (i = 0; i < rank; i++) {
 		select_per_cs_training_index(chan, i);
 		/* PI_60 PI_WRLVL_EN:RW:8:2 */
@@ -1928,6 +1950,9 @@ static int data_training_rg(const struct chan_info *chan, u32 channel,
 	u32 obs_0, obs_1, obs_2, obs_3, obs_err = 0;
 	u32 rank = sdram_params->ch[channel].cap_info.rank;
 
+	/* clear interrupt,PI_175 PI_INT_ACK:WR:0:17 */
+	writel(0x00003f7c, (&denali_pi[175]));
+
 	for (i = 0; i < rank; i++) {
 		select_per_cs_training_index(chan, i);
 		/* PI_80 PI_RDLVL_GATE_EN:RW:24:2 */
@@ -1983,6 +2008,9 @@ static int data_training_rl(const struct chan_info *chan, u32 channel,
 	u32 i, tmp;
 	u32 rank = sdram_params->ch[channel].cap_info.rank;
 
+	/* clear interrupt,PI_175 PI_INT_ACK:WR:0:17 */
+	writel(0x00003f7c, (&denali_pi[175]));
+
 	for (i = 0; i < rank; i++) {
 		select_per_cs_training_index(chan, i);
 		/* PI_80 PI_RDLVL_EN:RW:16:2 */
@@ -2024,6 +2052,9 @@ static int data_training_wdql(const struct chan_info *chan, u32 channel,
 	u32 i, tmp;
 	u32 rank = sdram_params->ch[channel].cap_info.rank;
 	u32 rank_mask;
+
+	/* clear interrupt,PI_175 PI_INT_ACK:WR:0:17 */
+	writel(0x00003f7c, (&denali_pi[175]));
 
 	if (sdram_params->base.dramtype == LPDDR4)
 		rank_mask = (rank == 1) ? 0x5 : 0xf;
@@ -2071,6 +2102,7 @@ static int data_training(const struct chan_info *chan, u32 channel,
 			 u32 training_flag)
 {
 	u32 *denali_phy = chan->publ->denali_phy;
+	int ret = 0;
 
 	/* PHY_927 PHY_PAD_DQS_DRIVE  RPULL offset_22 */
 	setbits_le32(&denali_phy[927], (1 << 22));
@@ -2091,29 +2123,45 @@ static int data_training(const struct chan_info *chan, u32 channel,
 	}
 
 	/* ca training(LPDDR4,LPDDR3 support) */
-	if ((training_flag & PI_CA_TRAINING) == PI_CA_TRAINING)
-		data_training_ca(chan, channel, sdram_params);
+	if ((training_flag & PI_CA_TRAINING) == PI_CA_TRAINING) {
+		ret = data_training_ca(chan, channel, sdram_params);
+		if (ret != 0)
+			goto out;
+	}
 
 	/* write leveling(LPDDR4,LPDDR3,DDR3 support) */
-	if ((training_flag & PI_WRITE_LEVELING) == PI_WRITE_LEVELING)
-		data_training_wl(chan, channel, sdram_params);
+	if ((training_flag & PI_WRITE_LEVELING) == PI_WRITE_LEVELING) {
+		ret = data_training_wl(chan, channel, sdram_params);
+		if (ret != 0)
+			goto out;
+	}
 
 	/* read gate training(LPDDR4,LPDDR3,DDR3 support) */
-	if ((training_flag & PI_READ_GATE_TRAINING) == PI_READ_GATE_TRAINING)
-		data_training_rg(chan, channel, sdram_params);
+	if ((training_flag & PI_READ_GATE_TRAINING) == PI_READ_GATE_TRAINING) {
+		ret = data_training_rg(chan, channel, sdram_params);
+		if (ret != 0)
+			goto out;
+	}
 
 	/* read leveling(LPDDR4,LPDDR3,DDR3 support) */
-	if ((training_flag & PI_READ_LEVELING) == PI_READ_LEVELING)
-		data_training_rl(chan, channel, sdram_params);
+	if ((training_flag & PI_READ_LEVELING) == PI_READ_LEVELING) {
+		ret = data_training_rl(chan, channel, sdram_params);
+		if (ret != 0)
+			goto out;
+	}
 
 	/* wdq leveling(LPDDR4 support) */
-	if ((training_flag & PI_WDQ_LEVELING) == PI_WDQ_LEVELING)
-		data_training_wdql(chan, channel, sdram_params);
+	if ((training_flag & PI_WDQ_LEVELING) == PI_WDQ_LEVELING) {
+		ret = data_training_wdql(chan, channel, sdram_params);
+		if (ret != 0)
+			goto out;
+	}
 
 	/* PHY_927 PHY_PAD_DQS_DRIVE  RPULL offset_22 */
 	clrbits_le32(&denali_phy[927], (1 << 22));
 
-	return 0;
+out:
+	return ret;
 }
 
 static void set_ddrconfig(const struct chan_info *chan,
@@ -2166,7 +2214,14 @@ static void dram_all_config(struct dram_info *dram,
 		sdram_msch_config(ddr_msch_regs, noc_timing);
 
 		/* rank 1 memory clock disable (dfi_dram_clk_disable = 1) */
-		if (sdram_params->ch[channel].cap_info.rank == 1)
+		/*
+		 * LPDDR4 can't disable dfi dram clk, otherwise CLK1P/N will be
+		 * disabled, the hardware connect CLK0P/N to low 16bit, and
+		 * CLK1P/N to high 16bit, if CLK1P/N is disabled, high 16bit
+		 * will never work
+		 */
+		if (sdram_params->ch[channel].cap_info.rank == 1 &&
+		    sdram_params->base.dramtype != LPDDR4)
 			setbits_le32(&dram->chan[channel].pctl->denali_ctl[276],
 				     1 << 17);
 	}
