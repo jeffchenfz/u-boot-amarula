@@ -267,7 +267,7 @@ int sdram_detect_col(struct rk3399_cap_info *cap_info,
 		    (readl(CONFIG_SYS_SDRAM_BASE) == 0))
 			break;
 	}
-	printf("sdram_detect_col: col = %d\n", col);
+	debug("sdram_detect_col: col = %d\n", col);
 	if (col == 8) {
 		printascii("col error\n");
 		return -1;
@@ -2446,25 +2446,25 @@ static unsigned char calculate_stride(struct rk3399_sdram_params *sdram_params)
 	}
 	switch (stride) {
 	case 0xc:
-		printf("128B stride\n");
+		debug("128B stride\n");
 		break;
 	case 5:
 	case 9:
 	case 0xd:
 	case 0x11:
 	case 0x19:
-		printf("256B stride\n");
+		debug("256B stride\n");
 		break;
 	case 0xa:
 	case 0xe:
 	case 0x12:
-		printf("512B stride\n");
+		debug("512B stride\n");
 		break;
 	case 0xf:
-		printf("4K stride\n");
+		debug("4K stride\n");
 		break;
 	case 0x1f:
-		printf("32MB + 256B stride\n");
+		debug("32MB + 256B stride\n");
 		break;
 	default:
 		printf("no stride\n");
@@ -2696,7 +2696,7 @@ static u64 dram_detect_cap(struct dram_info *dram,
 
 	/* detect col */
 	dram_set_max_col(chan, bw, &col_tmp);
-	printf("%s: col_tmp = %d\n", __func__, col_tmp);
+	debug("%s: col_tmp = %d\n", __func__, col_tmp);
 	if (sdram_detect_col(cap_info, col_tmp) != 0)
 		goto error;
 
@@ -3274,7 +3274,7 @@ static int dram_set_rate(struct dram_info *dram,
 				printf("channel %d training failed!\n",
 				       channel);
 			else
-				printf("channel %d training pass\n", channel);
+				debug("channel %d training pass\n", channel);
 		}
 	}
 
@@ -3292,7 +3292,7 @@ static void set_rate0(struct dram_info *dram,
 	dram_set_phy_fn(dram, sdram_params, phy_fn, &dfs_configs[ctl_fn]);
 	dram_set_rate(dram, sdram_params, ctl_fn,
 		      dfs_configs[ctl_fn].base.ddr_freq);
-	printf("change freq to %d MHz %d, %d\n",
+	debug("change freq to %d MHz %d, %d\n",
 	       dfs_configs[ctl_fn].base.ddr_freq / MHZ, ctl_fn, phy_fn);
 }
 
@@ -3307,7 +3307,7 @@ static void set_rate1(struct dram_info *dram,
 	dram_set_phy_fn(dram, sdram_params, phy_fn, &dfs_configs[ctl_fn]);
 	dram_set_rate(dram, sdram_params, ctl_fn,
 		      dfs_configs[ctl_fn].base.ddr_freq);
-	printf("change freq to %d MHz %d, %d\n",
+	debug("change freq to %d MHz %d, %d\n",
 	       dfs_configs[ctl_fn].base.ddr_freq / MHZ, ctl_fn, phy_fn);
 }
 
@@ -3391,18 +3391,18 @@ static int sdram_init(struct dram_info *dram,
 		struct rk3399_cap_info *cap_info =
 			&sdram_params->ch[channel].cap_info;
 
-		printf("Actual rank %d, col %d\n", sdram_params->ch[channel].cap_info.rank, sdram_params->ch[channel].cap_info.col);
-		printf("rank %d, col %d\n", cap_info->rank, cap_info->col);
+		debug("Actual rank %d, col %d\n", sdram_params->ch[channel].cap_info.rank, sdram_params->ch[channel].cap_info.col);
+		debug("rank %d, col %d\n", cap_info->rank, cap_info->col);
 		if (cap_info->rank == 0) {
-			printf("rank %d\n", cap_info->rank);
+			debug("rank %d\n", cap_info->rank);
 			clear_channel_params(sdram_params, 1);
 			continue;
 		} else {
 			sdram_params->base.num_channels++;
 		}
 
-		printf("Channel ");
-		printf(channel ? "1: " : "0: ");
+		debug("Channel ");
+		debug(channel ? "1: " : "0: ");
 
 		if (channel == 0)
 			set_ddr_stride(dram->pmusgrf, 0x17);
@@ -3413,8 +3413,9 @@ static int sdram_init(struct dram_info *dram,
 			printf("Cap error!\n");
 			continue;
 		}
-
+#ifdef DEBUG
 		sdram_print_ddr_info(cap_info, &sdram_params->base, 0);
+#endif
 		set_memory_map(chan, channel, sdram_params);
 		cap_info->ddrconfig =
 			calculate_ddrconfig(sdram_params, channel);
@@ -3424,13 +3425,12 @@ static int sdram_init(struct dram_info *dram,
 		}
 		set_ddrconfig(chan, sdram_params, channel, cap_info->ddrconfig);
 		set_cap_relate_config(chan, sdram_params, channel);
-		printf("channel = %d,  %d\n", channel,  sdram_params->base.num_channels);
+		debug("channel = %d,  %d\n", channel,  sdram_params->base.num_channels);
 	}
 
 	if (sdram_params->base.num_channels == 0) {
 		sdram_print_dram_type(sdram_params->base.dramtype);
 		printf(" %dMHz\n", sdram_params->base.ddr_freq);
-		printf("return ch %d\n", sdram_params->base.num_channels);
 		return -1;
 	}
 
@@ -3445,21 +3445,7 @@ static int sdram_init(struct dram_info *dram,
 		set_rate1(dram, sdram_params);
 	}
 
-#if 0
-	printf("cic: ctr10: (0x%x - 0x%x)\n", &dram->cic->cic_ctrl0, readl(&dram->cic->cic_ctrl0));
-	printf("cic: status0: (0x%x - 0x%x)\n", &dram->cic->cic_status0, readl(&dram->cic->cic_status0));
-	printf("grf: ddrc0_con0 (0x%x - 0x%x)\n", &dram->grf->ddrc0_con0, readl(&dram->grf->ddrc0_con0));
-	printf("grf: ddrc1_con0 (0x%x - 0x%x)\n", &dram->grf->ddrc1_con0, readl(&dram->grf->ddrc1_con0));
-	printf("grf: soc_con0 (0x%x - 0x%x)\n", &dram->grf->soc_con0, readl(&dram->grf->soc_con0));
-	printf("pmu: noc_auto_ena (0x%x - 0x%x)\n", &dram->pmu->pmu_noc_auto_ena, readl(&dram->pmu->pmu_noc_auto_ena));
-	printf("pmu: bus_idle_req (0x%x - 0x%x)\n", &dram->pmu->pmu_bus_idle_req, readl(&dram->pmu->pmu_bus_idle_req));
-	printf("pmu: bus_idle_st (0x%x - 0x%x)\n", &dram->pmu->pmu_bus_idle_st, readl(&dram->pmu->pmu_bus_idle_st));
-	printf("pmugrf: os_reg2 (0x%x - 0x%x)\n", &dram->pmugrf->os_reg2, readl(&dram->pmugrf->os_reg2));
-	printf("pmugrf: os_reg3 (0x%x - 0x%x)\n", &dram->pmugrf->os_reg3, readl(&dram->pmugrf->os_reg3));
-	printf("pmusgrf: soc_con4 (0x%x - 0x%x)\n", &dram->pmusgrf->soc_con4, readl(&dram->pmusgrf->soc_con4));
-#endif
-
-	printf("Finish SDRAM initialization...\n");
+	debug("Finish SDRAM initialization...\n");
 	return 0;
 }
 
